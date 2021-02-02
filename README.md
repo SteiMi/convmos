@@ -4,7 +4,7 @@ This repository contains code for the paper "ConvMOS: Climate Model Output Stati
 
 ## Required data
 * REMO data
-    * This data is available [here](https://professor-x.de/datasets/remo_convmos.tgz).
+    * This data is available [here](https://professor-x.de/datasets/remo_convmos.tgz) (~ 5.6 GB).
     * It is already prepared for use with ConvMOS.
 * GTOPO 30
     * GTOPO is provided by [USGS](https://www.usgs.gov/centers/eros/science/usgs-eros-archive-digital-elevation-global-30-arc-second-elevation-gtopo30?qt-science_center_objects=0#).
