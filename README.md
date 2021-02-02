@@ -1,4 +1,6 @@
-# Model Output Statistics with Deep Learning
+# ConvMOS: Climate Model Output Statistics with Deep Learning
+
+This repository contains code for the paper "ConvMOS: Climate Model Output Statistics with Deep Learning".
 
 ## Data preparation
 This code is designed to work with data from REMO RCM. To this end, we have REMO variables as netcdf-files at the EUR-44 grid and GER-11 grid.  We base this on data with timesteps of 6-hours, but we want daily data. These files have to be preprocessed for them to be used here. This is achieved with `prepare_netcdf_files.sh`.
