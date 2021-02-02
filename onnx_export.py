@@ -50,7 +50,7 @@ def export(lr: float, model_name: str, save_dir: str):
     checkpoint_files = glob(join(save_dir, 'best_checkpoint_*.pt'))
     if len(checkpoint_files) > 0:
         # Parse something like:
-        # /scratch/deepsd/scratch_remo/APRL-rr-11-11-sdnext-loglonet-prec-ger11-maskedloss-7/best_checkpoint_194_val_loss=-11.8250.pt
+        # /scratch/scratch_remo/APRL-rr-11-11-sdnext-loglonet-prec-ger11-maskedloss-7/best_checkpoint_194_val_loss=-11.8250.pt
         # Sorry
         epoch_to_score = {
             int(c.split(sep)[-1].split('_')[2]): float(

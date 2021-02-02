@@ -117,7 +117,7 @@ def fillmiss(x):
 
 
 if __name__ == "__main__":
-    f = '/scratch/steininger/deepsd/remo/EUR-44/165/e031001e_c165_200001_remap.nc'
+    f = '/scratch/remo/EUR-44/165/e031001e_c165_200001_remap.nc'
 
     ds = xr.open_dataset(f)
     print(infer_remo_var_name(ds))
