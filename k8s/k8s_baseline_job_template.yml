@@ -1,0 +1,80 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ${JOB_NAME}
+  namespace: ${NAMESPACE}
+spec:
+  template:
+    spec:
+      tolerations:
+        - key: "network"
+          operator: "Equal"
+          value: "slow"
+          effect: "NoSchedule"
+        - key: "A100"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
+      priorityClassName: research-med
+      containers:
+        - name: worker
+          image: lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.1.0
+          imagePullPolicy: "Always"
+          resources:
+            limits:
+              cpu: "15"
+              memory: "80Gi"
+            requests:
+              cpu: "15"
+              memory: "35Gi"
+          volumeMounts:
+            - mountPath: "/workspace/results"
+              name: results
+            - mountPath: "/scratch"
+              name: scratch
+            - mountPath: "/workspace/config.ini"
+              name: config
+              subPath: "${CONFIG_NAME}"
+            - mountPath: "/dev/shm"
+              name: shm
+          command: ["python", "-u", "baseline.py", "--num_jobs", "15"]
+          # command: ["tail", "-f", "/dev/null"]
+      securityContext:
+        runAsUser: 1148
+        fsGroup: 1003
+      imagePullSecrets:
+        - name: lsx-harbor
+      volumes:
+        - name: results
+          cephfs:
+            monitors:
+              - 132.187.14.16,132.187.14.17,132.187.14.19,132.187.14.20
+            user: steininger
+            path: "/home/ls6/steininger/results/sd-next"
+            # path: "/home/ls6/steininger/results/sd-next/supervisedpca"
+            # path: "/home/ls6/steininger/results/sd-next/nlpcr"
+            # path: "/home/ls6/steininger/results/sd-next/lin"
+            secretRef:
+              name: ceph-secret
+        - name: scratch
+          cephfs:
+            monitors:
+              - 132.187.14.16,132.187.14.17,132.187.14.19,132.187.14.20
+            user: steininger
+            path: "/scratch"
+            secretRef:
+              name: ceph-secret
+        - name: config
+          configMap:
+            name: "${CONFIGMAP_NAME}"
+        # This allows shared memory allocation of up to the requested amount of memory
+        # (without this only 64 MB are available)
+        # see: https://www.ibm.com/blogs/research/2018/12/training-cloud-small-files/
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: "10Gi"
+      restartPolicy: Never
+  backoffLimit: 0
+  completions: 1
+  parallelism: 1
