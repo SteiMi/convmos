@@ -9,7 +9,7 @@ spec:
       priorityClassName: research-low
       containers:
         - name: worker
-          image: lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.1.0
+          image: lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.1.1
           imagePullPolicy: "Always"
           resources:
             limits:
@@ -45,9 +45,6 @@ spec:
               - 132.187.14.16,132.187.14.17,132.187.14.19,132.187.14.20
             user: steininger
             path: "/home/ls6/steininger/results/sd-next"
-            # path: "/home/ls6/steininger/results/sd-next/gggl"
-            # path: "/home/ls6/steininger/results/sd-next/ablation"
-            # path: "/home/ls6/steininger/results/sd-next/maskedloss"
             secretRef:
               name: ceph-secret
         - name: scratch

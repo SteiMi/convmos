@@ -6,5 +6,5 @@
 docker build . -t lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next
 # Push image to our docker registry
 # docker push lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next
-docker tag lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.1.0
-docker push lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.1.0
+docker tag lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.1.1
+docker push lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.1.1

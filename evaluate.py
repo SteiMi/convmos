@@ -164,7 +164,7 @@ def calculate_metrics(preds, obs):
     assert len(locs_to_calc) == len(args_to_calc)
 
     # Calculate the metrics for each cell in parallel
-    with Pool(processes=4) as pool:
+    with Pool(processes=None) as pool:
         results = pool.starmap(calculate_metrics_for_cell, args_to_calc)
 
     # Map each result to the correct location
@@ -458,8 +458,7 @@ def paper_figure(seasonal: bool = False):
         'ConvMOS': [
             expanduser(
                 '~/convmos_rmse_maps/convmos_gggl_test_predictions.nc'
-            ),  # this is 12 (gggl)
-            expanduser('~/convmos_rmse_maps/convmos_gggl_0_test_predictions.nc'),
+            ),  # this is 13 (gggl)
             expanduser('~/convmos_rmse_maps/convmos_gggl_1_test_predictions.nc'),
             expanduser('~/convmos_rmse_maps/convmos_gggl_2_test_predictions.nc'),
             expanduser('~/convmos_rmse_maps/convmos_gggl_3_test_predictions.nc'),
@@ -471,13 +470,14 @@ def paper_figure(seasonal: bool = False):
             expanduser('~/convmos_rmse_maps/convmos_gggl_9_test_predictions.nc'),
             expanduser('~/convmos_rmse_maps/convmos_gggl_10_test_predictions.nc'),
             expanduser('~/convmos_rmse_maps/convmos_gggl_11_test_predictions.nc'),
-            expanduser('~/convmos_rmse_maps/convmos_gggl_13_test_predictions.nc'),
+            expanduser('~/convmos_rmse_maps/convmos_gggl_12_test_predictions.nc'),
             expanduser('~/convmos_rmse_maps/convmos_gggl_14_test_predictions.nc'),
             expanduser('~/convmos_rmse_maps/convmos_gggl_15_test_predictions.nc'),
             expanduser('~/convmos_rmse_maps/convmos_gggl_16_test_predictions.nc'),
             expanduser('~/convmos_rmse_maps/convmos_gggl_17_test_predictions.nc'),
             expanduser('~/convmos_rmse_maps/convmos_gggl_18_test_predictions.nc'),
             expanduser('~/convmos_rmse_maps/convmos_gggl_19_test_predictions.nc'),
+            expanduser('~/convmos_rmse_maps/convmos_gggl_20_test_predictions.nc'),
         ],
         'Lin': [expanduser('~/convmos_rmse_maps/linear_test_predictions.nc')],
         'NL PCR': [expanduser('~/convmos_rmse_maps/nlpcr_test_predictions.nc')],

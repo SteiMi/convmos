@@ -8,9 +8,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="270mm"
+   width="275mm"
    height="57mm"
-   viewBox="0 0 270 57"
+   viewBox="0 0 275 57"
    version="1.1"
    id="svg8"
    inkscape:version="1.0.1 (c497b03c, 2020-09-10)"
@@ -27,10 +27,10 @@
     </linearGradient>
     <inkscape:perspective
        sodipodi:type="inkscape:persp3d"
-       inkscape:vp_x="8.1574945 : -94.172698 : 1"
+       inkscape:vp_x="8.1574941 : -94.172698 : 1"
        inkscape:vp_y="0 : 999.99994 : 0"
-       inkscape:vp_z="164.7945 : -5.7064859 : 1"
-       inkscape:persp3d-origin="114.8889 : -141.00001 : 1"
+       inkscape:vp_z="164.79449 : -5.7064859 : 1"
+       inkscape:persp3d-origin="114.88889 : -141.00001 : 1"
        id="perspective10" />
   </defs>
   <sodipodi:namedview
@@ -40,9 +40,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.5244259"
-     inkscape:cx="457.90459"
-     inkscape:cy="-116.98943"
+     inkscape:zoom="2.0149341"
+     inkscape:cx="813.9819"
+     inkscape:cy="110.87892"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
@@ -57,7 +57,7 @@
      width="185mm"
      inkscape:snap-others="true"
      inkscape:snap-to-guides="true"
-     inkscape:snap-grids="false">
+     inkscape:snap-grids="true">
     <inkscape:grid
        type="axonomgrid"
        id="grid947"
@@ -342,35 +342,31 @@
        d="m 231.11538,32.4 h 10.4"
        id="path3128-5-7" />
     <path
-       style="fill:none;stroke:#000000;stroke-width:0.206578px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 245.51538,32.4 h 3.81"
+       style="fill:none;stroke:#000000;stroke-width:0.165707px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 245.51538,32.4 h 2.45154"
        id="path3497-3" />
     <path
        style="fill:none;stroke:#ff0000;stroke-width:0.211666px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 253.32538,26 h -3.99998 v 0 l 11.99995,-12 h 4 z"
+       d="m 259,26.000001 h -3.99998 v 0 l 11.99995,-12 h 4 z"
        id="path965-0-6-9-2-2" />
     <path
        style="fill:none;stroke:#ff0000;stroke-width:0.211666px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 249.3254,26 v 24.000002 h 3.99998 V 26 Z"
-       id="path967-3-31-3-2-2" />
-    <path
-       style="fill:none;stroke:#ff0000;stroke-width:0.211666px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 265.32538,14 -12,11.999999 v 24 L 265.32538,38 Z"
+       d="M 271,14.000001 259,26 v 24 l 12,-11.999999 z"
        id="path3591" />
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:3.52778px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.211666"
-       x="258.71863"
-       y="3.6627316"
+       x="264.39325"
+       y="3.6627326"
        id="text3085-2-0-8"><tspan
          sodipodi:role="line"
-         x="258.71863"
-         y="3.6627316"
+         x="264.39325"
+         y="3.6627326"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, ';text-align:center;text-anchor:middle;stroke-width:0.211666"
          id="tspan3087-9-23-3">Corrected</tspan><tspan
          sodipodi:role="line"
-         x="258.71863"
-         y="8.159626"
+         x="264.39325"
+         y="8.159627"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, ';text-align:center;text-anchor:middle;stroke-width:0.211666"
          id="tspan3611">Precipitation</tspan></text>
     <ellipse
@@ -540,5 +536,23 @@
        style="fill:none;stroke:#000000;stroke-width:0.211666px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 185.26098,32.548565 h 4"
        id="path3497-8-6" />
+    <circle
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.211999;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path3491-1-8"
+       cx="250.11118"
+       cy="32.457577"
+       r="2" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.177178px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 252.19729,32.368824 H 255"
+       id="path3497-3-9" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.276638px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 249.03687,32.790414 h 1.0754 l 0.92177,-0.890027"
+       id="path982" />
+    <path
+       style="fill:none;stroke:#ff0000;stroke-width:0.211666px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 255.00002,26.000001 V 50.000003 H 259 V 26.000001 Z"
+       id="path967-3-31-3-2-2" />
   </g>
 </svg>

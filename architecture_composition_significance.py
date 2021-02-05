@@ -24,8 +24,14 @@ def test(
 if __name__ == '__main__':
 
     results = pd.read_json(
-        expanduser(join('~', 'results', 'sd-next', 'ablation', 'results.json'))
+        expanduser(join('~', 'results', 'sd-next', 'ablation_2', 'results.json'))
     )
+
+    # Filter gggl test-runs
+    results = results[results['DataOptions.max_year'] == 2010]
+
+    # Check whether we have results for 20 runs
+    assert all(results.groupby('NN.architecture').size() == 20)
 
     pd.options.display.float_format = '{:,.3f}'.format
     # Note that metrics called 'test_*' are actually calculated on the validation data of the complete data set here

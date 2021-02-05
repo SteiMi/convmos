@@ -8,7 +8,7 @@ ARCHITECTURES=( {l,g} {l,g}{l,g} {l,g}{l,g}{l,g} {l,g}{l,g}{l,g}{l,g} )
 
 for a in "${ARCHITECTURES[@]}";
 do
-    for i in `seq 11 $NUM_RUNS`;
+    for i in `seq 1 $NUM_RUNS`;
     do
         echo "Starting run $a-$i"
         $DIR/start_k8s_job.sh $a-$i convmos $a prec True

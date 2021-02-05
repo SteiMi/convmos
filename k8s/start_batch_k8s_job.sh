@@ -7,5 +7,5 @@ NUM_RUNS=20
 for i in `seq 1 $NUM_RUNS`;
 do
     echo "Starting run $i"
-    $DIR/start_k8s_job.sh nlpcr-$i linear-nonlocal
+    $DIR/start_k8s_job.sh gggl-$i convmos gggl
 done

@@ -57,8 +57,8 @@ class GlobalNet(nn.Module):
         prev_layer_size = self.input_depth
         for i, k in enumerate(self.kernel_sizes):
 
-            # Always use ReLU. Our output should always be >0 for precipitation and temperature (in Kelvin)
-            is_layer_linear = False
+            # Always use ReLU except for the final layer
+            is_layer_linear = (i == len(self.kernel_sizes) - 1)
             modules.append(
                 (
                     'ConvBlock' + str(i),

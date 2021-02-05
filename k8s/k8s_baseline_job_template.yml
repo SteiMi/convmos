@@ -6,19 +6,10 @@ metadata:
 spec:
   template:
     spec:
-      tolerations:
-        - key: "network"
-          operator: "Equal"
-          value: "slow"
-          effect: "NoSchedule"
-        - key: "A100"
-          operator: "Equal"
-          value: "true"
-          effect: "NoSchedule"
       priorityClassName: research-med
       containers:
         - name: worker
-          image: lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.1.0
+          image: lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.1.1
           imagePullPolicy: "Always"
           resources:
             limits:
@@ -51,9 +42,6 @@ spec:
               - 132.187.14.16,132.187.14.17,132.187.14.19,132.187.14.20
             user: steininger
             path: "/home/ls6/steininger/results/sd-next"
-            # path: "/home/ls6/steininger/results/sd-next/supervisedpca"
-            # path: "/home/ls6/steininger/results/sd-next/nlpcr"
-            # path: "/home/ls6/steininger/results/sd-next/lin"
             secretRef:
               name: ceph-secret
         - name: scratch
