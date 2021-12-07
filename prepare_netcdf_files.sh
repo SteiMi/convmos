@@ -143,7 +143,8 @@ for file in ${files[@]}; do
         fi
     fi
 
-    /usr/local/bin/ncrename -v time,time_var -v lon,lon_var -v lat,lat_var "$output"
+    # Renaming might not be necessary anymore since xarray has the decode_cf option!!
+    # /usr/local/bin/ncrename -v time,time_var -v lon,lon_var -v lat,lat_var "$output"
     ((index++))
 done
 

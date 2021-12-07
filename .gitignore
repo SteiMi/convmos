@@ -1,6 +1,7 @@
 *.pyc
 .DS_Store
-.vscode/
 .mypy_cache/
+.ipynb_checkpoints/
 sshuttle.pid
-data/*
+eval_out/
+local_scratch/

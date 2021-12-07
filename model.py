@@ -2,9 +2,11 @@ from collections import OrderedDict
 import torch
 from torch import nn
 from torch import Tensor
-from typing import List, Tuple
+from typing import List, Literal, Tuple
 
 from config_loader import config
+from models.unet.unet_model import UNet
+from models.resnet import ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
 
 
 class ConvBlock(nn.Module):
@@ -58,7 +60,7 @@ class GlobalNet(nn.Module):
         for i, k in enumerate(self.kernel_sizes):
 
             # Always use ReLU except for the final layer
-            is_layer_linear = (i == len(self.kernel_sizes) - 1)
+            is_layer_linear = i == len(self.kernel_sizes) - 1
             modules.append(
                 (
                     'ConvBlock' + str(i),
@@ -78,7 +80,6 @@ class GlobalNet(nn.Module):
 
 
 class PerPixelLinear(nn.Module):
-
     def __init__(
         self, width: int, height: int, in_channels: int, bias: bool = True
     ) -> None:
@@ -136,18 +137,47 @@ class LocalNet(nn.Module):
         return self.local_net(x[:, :-1])
 
 
-char_to_module = {'l': LocalNet, 'g': GlobalNet}
+str_to_module = {
+    'GlobalNet': GlobalNet,
+    'LocalNet': LocalNet,
+    'UNet': UNet,
+    'ResNet18': ResNet18,
+    'ResNet34': ResNet34,
+    'ResNet50': ResNet50,
+    'ResNet101': ResNet101,
+    'ResNet152': ResNet152,
+    'ReLU': nn.ReLU,
+    'none': nn.Identity
+}
+ValidModules = Literal['GlobalNet', 'LocalNet', 'UNet', 'ResNet18', 'ResNet34', 'ResNet50', 'ResNet101', 'ResNet152']
+ValidActivation = Literal['ReLU', 'none']
 
 
 class ConvMOS(nn.Module):
-    def __init__(self, architecture: str = 'lgl'):
+    def __init__(
+        self,
+        architecture: str = 'gggl',
+        global_module: ValidModules = 'GlobalNet',
+        local_module: ValidModules = 'LocalNet',
+        output_activation: ValidActivation = 'ReLU'
+    ):
         super(ConvMOS, self).__init__()
+
+        try:
+            global_module_class = str_to_module[global_module]
+            local_module_class = str_to_module[local_module]
+            output_activation_class = str_to_module[output_activation]
+        except KeyError:
+            print('Unknown module or output activation!')
+            raise
+
+        char_to_module = {'l': local_module_class, 'g': global_module_class}
 
         self.module_list = nn.ModuleList(
             [char_to_module[m_str]() for m_str in architecture]
         )
 
-        self.out_act = nn.ReLU()
+        self.out_act = output_activation_class()
 
     def forward(self, x: Tensor) -> Tensor:
 
@@ -177,7 +207,11 @@ if __name__ == "__main__":
         config.getint('NN', 'input_height'),
     )
 
-    model = ConvMOS()
+    # model = ConvMOS(architecture='gl', global_module='UNet', output_activation='none')
+    # model = UNet()
+    model = ResNet50()
+    print(model)
+    print(data.shape)
 
     out = model(data)
 

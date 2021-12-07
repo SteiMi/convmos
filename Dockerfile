@@ -1,4 +1,4 @@
-FROM lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/torch-gdal:1.0.0
+FROM lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/torch-gdal:1.2.0
 
 COPY requirements.txt .
 
@@ -6,6 +6,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY *.py ./
+COPY models ./models
 COPY remo_eobs_land_mask.npy ./
 COPY data ./data
 

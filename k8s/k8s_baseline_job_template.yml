@@ -6,6 +6,15 @@ metadata:
 spec:
   template:
     spec:
+      tolerations:
+        - key: "network"
+          operator: "Equal"
+          value: "slow"
+          effect: "NoSchedule"
+        - key: "A100"
+          operator: "Equal"
+          value: "true"
+          effect: "NoSchedule"
       priorityClassName: research-med
       containers:
         - name: worker
@@ -34,7 +43,7 @@ spec:
         runAsUser: 1148
         fsGroup: 1003
       imagePullSecrets:
-        - name: lsx-harbor
+        - name: lsx-harbor-sd
       volumes:
         - name: results
           cephfs:
@@ -42,6 +51,9 @@ spec:
               - 132.187.14.16,132.187.14.17,132.187.14.19,132.187.14.20
             user: steininger
             path: "/home/ls6/steininger/results/sd-next"
+            # path: "/home/ls6/steininger/results/sd-next/supervisedpca"
+            # path: "/home/ls6/steininger/results/sd-next/nlpcr"
+            # path: "/home/ls6/steininger/results/sd-next/lin"
             secretRef:
               name: ceph-secret
         - name: scratch

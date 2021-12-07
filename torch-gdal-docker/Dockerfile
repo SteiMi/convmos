@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:1.6.0-cuda10.1-cudnn7-runtime
+FROM pytorch/pytorch:1.7.1-cuda11.0-cudnn8-runtime
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
     apt-get install -y \
@@ -28,6 +28,15 @@ ENV C_INCLUDE_PATH=/usr/include/gdal
 
 # Install correct GDAL version depending on the one installed in the container
 RUN pip install GDAL==$(gdal-config --version | awk -F'[.]' '{print $1"."$2}')
+
+# Install Latex to have nice text in plots based on this image
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update -q && apt-get install -qy \
+    texlive-full \
+    python-pygments gnuplot \
+    make git \
+    && rm -rf /var/lib/apt/lists/*
 
 
 CMD [ "echo", "You should add your code and change this command!" ]

@@ -135,6 +135,7 @@ class RemoDataset(Dataset):
 
         x_stats = stats.describe(self.X, axis=None)
         elev_stats = stats.describe(self.elev_arr, axis=None)
+        print('x_stats', x_stats)
 
         if self.aux is not None:
             self.aux_means: List[float] = []

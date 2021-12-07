@@ -110,9 +110,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.3471839"
-     inkscape:cx="190.91595"
-     inkscape:cy="431.73652"
+     inkscape:zoom="1.42"
+     inkscape:cx="104.9365"
+     inkscape:cy="522.53368"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      inkscape:document-rotation="0"
@@ -144,7 +144,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -375,18 +375,13 @@
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:3.52778px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
        x="40.306419"
-       y="84.01963"
+       y="81.411064"
        id="text356"><tspan
          sodipodi:role="line"
-         id="tspan354"
          x="40.306419"
-         y="84.01963"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, ';text-align:center;text-anchor:middle;stroke-width:0.264583">1D-Conv</tspan><tspan
-         sodipodi:role="line"
-         x="40.306419"
-         y="88.516525"
+         y="81.411064"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, ';text-align:center;text-anchor:middle;stroke-width:0.264583"
-         id="tspan358">(groups = P)</tspan></text>
+         id="tspan358">1D-Conv</tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2Lend)"
        d="M 22,42 V 55"
@@ -399,5 +394,21 @@
        style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow2Lend-8)"
        d="m 22,107.23747 v 13"
        id="path1165-7" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:3.52778px;line-height:1.25;font-family:sans-serif;text-align:start;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.211666"
+       x="28.407366"
+       y="85.865311"
+       id="text3085-0-5-4-2"><tspan
+         sodipodi:role="line"
+         x="28.407366"
+         y="85.865311"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, ';text-align:start;text-anchor:start;stroke-width:0.211666"
+         id="tspan959">(kernel size = P</tspan><tspan
+         sodipodi:role="line"
+         x="28.407366"
+         y="90.362206"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52778px;font-family:'Times New Roman';-inkscape-font-specification:'Times New Roman, ';text-align:start;text-anchor:start;stroke-width:0.211666"
+         id="tspan965"> groups = H * W)</tspan></text>
   </g>
 </svg>

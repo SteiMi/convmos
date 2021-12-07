@@ -1,0 +1,48 @@
+apiVersion: '2019-12-01'
+location: northeurope
+name: ${JOB_NAME}
+properties:
+  containers:
+  - name: worker
+    properties:
+      environmentVariables: []
+      image: steimi/sd-next:1.4.10
+      resources:
+        requests:
+          # cpu: 1.0
+          cpu: 0.5
+          memoryInGB: 25.0
+          gpu:
+            count: 1
+            sku: K80
+      volumeMounts:
+      - mountPath: "/workspace/results"
+        name: results
+      - mountPath: "/scratch"
+        name: scratch
+      - mountPath: "/workspace/config"
+        name: config
+      command: ["python", "-u", "run.py", "--num_workers", "0"] # Train + inference
+      # command: ["sh", "-c", "\"cat /workspace/config/config.ini\""]
+  osType: Linux
+  restartPolicy: Never
+  volumes:
+  - name: results
+    azureFile:
+      sharename: results
+      storageAccountName: INSERT_YOUR_NAME
+      storageAccountKey: INSERT_YOUR_KEY
+  - name: scratch
+    azureFile:
+      sharename: scratch
+      storageAccountName: INSERT_YOUR_NAME
+      storageAccountKey: INSERT_YOUR_KEY
+  - name: config
+    secret:
+      config.ini: "${CONFIG}"
+  imageRegistryCredentials: # Credentials to pull a private image
+  - server: index.docker.io
+    username: steimi
+    password: ${DOCKER_HUB_PW}
+tags: {}
+type: Microsoft.ContainerInstance/containerGroups

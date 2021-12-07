@@ -1,9 +1,65 @@
 from datetime import datetime
 import os
+from typing import List
 import xarray as xr
 import numpy as np
 import pandas as pd
 import scipy.interpolate
+import matplotlib as mpl
+
+
+def set_size(width: float = 338.0, fraction: float = 1.0, subplot: List[int] = [1, 1]):
+    """Set aesthetic figure dimensions to avoid scaling in latex.
+
+    Parameters
+    ----------
+    width: float
+            Width in pts
+            Default value 347.12354 is textwidth for Springer llncs
+    fraction: float
+            Fraction of the width which you wish the figure to occupy
+
+    Returns
+    -------
+    fig_dim: tuple
+            Dimensions of figure in inches
+
+    From: https://jwalton.info/Embed-Publication-Matplotlib-Latex/
+    """
+    # Width of figure
+    fig_width_pt = width * fraction
+
+    # Convert from pt to inches
+    inches_per_pt = 1 / 72.27
+
+    # Golden ratio to set aesthetic figure height
+    golden_ratio = (5 ** 0.5 - 1) / 2
+
+    # Figure width in inches
+    fig_width_in = fig_width_pt * inches_per_pt
+    # Figure height in inches
+    fig_height_in = fig_width_in * golden_ratio * (subplot[0] / subplot[1])
+
+    fig_dim = (fig_width_in, fig_height_in)
+
+    return fig_dim
+
+
+def init_mpl(usetex: bool = True):
+    nice_fonts = {
+        # Use LaTeX to write all text
+        "text.usetex": usetex,
+        "font.family": "serif",
+        # Use 10pt font in plots, to match 10pt font in document
+        "axes.labelsize": 10,
+        "font.size": 10,
+        # Make the legend/label fonts a little smaller
+        "legend.fontsize": 8,
+        "xtick.labelsize": 8,
+        "ytick.labelsize": 8,
+    }
+
+    mpl.rcParams.update(nice_fonts)
 
 
 def cur_time_string():
@@ -116,8 +172,19 @@ def fillmiss(x):
     return result0
 
 
+def flatten_dict(d, c=[]):
+    """
+    Flattens first two "layers" of a dict.
+    """
+    flat_dict = {}
+    for k1, v1 in d.items():
+        for k2, v2 in v1.items():
+            flat_dict[(k1, k2)] = v2
+    return flat_dict
+
+
 if __name__ == "__main__":
-    f = '/scratch/remo/EUR-44/165/e031001e_c165_200001_remap.nc'
+    f = '/scratch/steininger/deepsd/remo/EUR-44/165/e031001e_c165_200001_remap.nc'
 
     ds = xr.open_dataset(f)
     print(infer_remo_var_name(ds))

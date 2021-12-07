@@ -1,8 +1,8 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: ${JOB_NAME}
-  namespace: ${NAMESPACE}
+  name: convmos-evaluate-denseloss-ees2-tb
+  namespace: steininger
 spec:
   template:
     spec:
@@ -13,26 +13,21 @@ spec:
           imagePullPolicy: "Always"
           resources:
             limits:
-              cpu: "3"
-              memory: "25Gi"
-              nvidia.com/gpu: "1"
+              cpu: "20"
+              memory: "40Gi"
             requests:
-              cpu: "3"
-              memory: "25Gi"
-              nvidia.com/gpu: "1"
+              cpu: "20"
+              memory: "40Gi"
           volumeMounts:
-            - mountPath: "/workspace/results"
+            - mountPath: "/workspace/eval_out"
               name: results
             - mountPath: "/scratch"
               name: scratch
-            - mountPath: "/workspace/config.ini"
-              name: config
-              subPath: "${CONFIG_NAME}"
-            - mountPath: "/dev/shm"
-              name: shm
-          command: ["python", "-u", "run.py", "--num_workers", "3"] # Train + inference
-          # command: ["python", "run.py", "--num_workers", "2", "--overfit_on_few_samples"] # Train + inference
-          # command: ["tail", "-f", "/dev/null"] # Train + inference
+          command: ["sh", "-c"]
+          args: ["python -u evaluate.py -p 20 --path-prefix /scratch/steininger/deepsd/convmos_paper_runs | tee eval_out/evaluate.log"] # Create default paper evaluation
+          # args: ["python -u evaluate.py -r -t -p 20 --path-prefix /scratch/steininger/deepsd/convmos_paper_runs | tee eval_out/evaluate_twobin.log"] # Create rare paper evaluation for only two bins
+          # args: ["python -u seasonal_paper_table_and_plot.py -p 20 --path-prefix /scratch/steininger/deepsd/convmos_paper_runs | tee eval_out/evaluate_seasonal.log"] # Create default seasonal paper evaluation
+          # args: ["python -u evaluate.py -a -p 20 --path-prefix /scratch/steininger/deepsd/scratch_remo/ablation | tee eval_out/ablation_evaluate.log"] # Create ablation paper evaluation
       securityContext:
         runAsUser: 1148
         fsGroup: 1003
@@ -55,16 +50,6 @@ spec:
             path: "/scratch"
             secretRef:
               name: ceph-secret
-        - name: config
-          configMap:
-            name: "${CONFIGMAP_NAME}"
-        # This allows shared memory allocation of up to the requested amount of memory
-        # (without this only 64 MB are available)
-        # see: https://www.ibm.com/blogs/research/2018/12/training-cloud-small-files/
-        - name: shm
-          emptyDir:
-            medium: Memory
-            sizeLimit: "10Gi"
       restartPolicy: Never
   backoffLimit: 0
   completions: 1

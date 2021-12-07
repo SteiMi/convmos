@@ -46,17 +46,31 @@ class RemoBase(object):
         )
         self.input_data = xr.open_mfdataset(fnames, combine='nested', concat_dim='time')
         self.input_data = self.input_data.reset_coords()
-        self.input_data = self.input_data.rename(
-            {'time_var': 'time', 'lat_var': 'lat', 'lon_var': 'lon'}
-        )
+        # At first xarray didn't support .nc files following CF conventions which is why I had to rename variables.
+        # The following renames the renamed variables back to the original name again.
+        if (
+            'time_var' in self.input_data
+            and 'lat_var' in self.input_data
+            and 'lon_var' in self.input_data
+        ):
+            self.input_data = self.input_data.rename(
+                {'time_var': 'time', 'lat_var': 'lat', 'lon_var': 'lon'}
+            )
         self.input_data = self.input_data.set_coords(['time', 'lat', 'lon'])
         self.input_data = self.input_data.set_index(time='time')
 
     def _read_target(self):
         self.target_data = xr.open_dataset(self.target_data_file)
-        self.target_data = self.target_data.rename(
-            {'time_var': 'time', 'lat_var': 'lat', 'lon_var': 'lon'}
-        )
+        # At first xarray didn't support .nc files following CF conventions which is why I had to rename variables.
+        # The following renames the renamed variables back to the original name again.
+        if (
+            'time_var' in self.target_data
+            and 'lat_var' in self.target_data
+            and 'lon_var' in self.target_data
+        ):
+            self.target_data = self.target_data.rename(
+                {'time_var': 'time', 'lat_var': 'lat', 'lon_var': 'lon'}
+            )
         self.target_data = self.target_data.set_index(time='time')
         self.target_data = self.target_data.set_coords(['time', 'lon', 'lat'])
         self.target_data = self.target_data.sel(
@@ -82,9 +96,16 @@ class RemoBase(object):
                 fnames, combine='nested', concat_dim='time'
             )
             self.aux_data[feature_dir] = self.aux_data[feature_dir].reset_coords()
-            self.aux_data[feature_dir] = self.aux_data[feature_dir].rename(
-                {'time_var': 'time', 'lat_var': 'lat', 'lon_var': 'lon'}
-            )
+            # At first xarray didn't support .nc files following CF conventions which is why I had to rename variables.
+            # The following renames the renamed variables back to the original name again.
+            if (
+                'time_var' in self.aux_data[feature_dir]
+                and 'lat_var' in self.aux_data[feature_dir]
+                and 'lon_var' in self.aux_data[feature_dir]
+            ):
+                self.aux_data[feature_dir] = self.aux_data[feature_dir].rename(
+                    {'time_var': 'time', 'lat_var': 'lat', 'lon_var': 'lon'}
+                )
             self.aux_data[feature_dir] = self.aux_data[feature_dir].set_coords(
                 ['time', 'lat', 'lon']
             )
@@ -149,10 +170,10 @@ class RemoSuperRes(RemoBase):
         # Fill missing values in Y
         for t in range(Y.shape[0]):
             # E-OBS precipitation data is nan when there is no rain. We therefore replace all nans with 0.
-            if self.target_var == 'rr':
+            if self.target_var in ['rr', 'cp', 'lsp', 'sf']:
                 Y[t] = np.nan_to_num(Y[t])
             # For temperature we can use interpolation
-            else:
+            elif self.target_var == 'TEMP2':
                 Y[t] = utils.fillmiss(Y[t])
 
         Y = Y[:, :, :, np.newaxis]
