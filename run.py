@@ -1,5 +1,6 @@
 from __future__ import print_function
 from argparse import ArgumentParser
+from datetime import datetime
 from functools import partial
 from glob import glob
 from os.path import join
@@ -119,7 +120,7 @@ def masked_mse_loss(
     device: str,
     dw: Optional[DenseWeight] = None,
 ) -> torch.Tensor:
-    """MSE loss which ignores parts of the tensor. In our case, we ignore sea cells, as there are no labels there. Also allows for per-cell-and-time loss weighting via DenseWeight (making it a DenseLoss). """
+    """MSE loss which ignores parts of the tensor. In our case, we ignore sea cells, as there are no labels there. Also allows for per-cell-and-time loss weighting via DenseWeight (making it a DenseLoss)."""
     se = (inp - target) ** 2
     # We unfortunately have to move to cpu for the denseweight part
     if dw is not None:
@@ -137,7 +138,7 @@ def extreme_masked_mse_loss(
     target: torch.Tensor,
     mask: torch.Tensor,
 ) -> torch.Tensor:
-    """MSE loss which ignores parts of the tensor. In our case, we ignore sea cells, as there are no labels there and also targets < 50 mm. This does not calculate metrics per cell but overall. """
+    """MSE loss which ignores parts of the tensor. In our case, we ignore sea cells, as there are no labels there and also targets < 50 mm. This does not calculate metrics per cell but overall."""
     inp_filtered = inp[:, :, mask]
     target_filtered = target[:, :, mask]
     # Filter samples corresponding to extreme precipitation
@@ -342,7 +343,9 @@ def run(
         writer.add_scalar("training/avg_loss", avg_mse, engine.state.epoch)
         writer.add_scalar("training/avg_rmse", avg_rmse, engine.state.epoch)
         writer.add_scalar("training/avg_mae", avg_mae, engine.state.epoch)
-        writer.add_scalar("training/avg_extreme_mse", avg_extreme_mse, engine.state.epoch)
+        writer.add_scalar(
+            "training/avg_extreme_mse", avg_extreme_mse, engine.state.epoch
+        )
 
     @trainer.on(Events.EPOCH_COMPLETED(every=val_step))
     def log_validation_results(engine):
@@ -360,7 +363,9 @@ def run(
         writer.add_scalar("validation/avg_loss", avg_mse, engine.state.epoch)
         writer.add_scalar("validation/avg_rmse", avg_rmse, engine.state.epoch)
         writer.add_scalar("validation/avg_mae", avg_mae, engine.state.epoch)
-        writer.add_scalar("validation/avg_extreme_mse", avg_extreme_mse, engine.state.epoch)
+        writer.add_scalar(
+            "validation/avg_extreme_mse", avg_extreme_mse, engine.state.epoch
+        )
 
     @trainer.on(Events.EPOCH_COMPLETED(every=save_step))
     def log_model_weights(engine):
@@ -415,11 +420,16 @@ def run(
 
     # kick everything off
     if not eval_only:
+        train_start = datetime.now()
+        print('Training started at', train_start)
         trainer.run(train_loader, max_epochs=epochs)
+        train_end = datetime.now()
+        print('Training ended at', train_end)
+        print('Training duration:', train_end - train_start)
 
     # Load best model
     best_checkpoint = best_checkpoint_handler.last_checkpoint
-    train_epochs = best_checkpoint.split('_')[2]
+    train_epochs = str(best_checkpoint).split('_')[2]
     print('Loading best checkpoint from', best_checkpoint)
     checkpoint = torch.load(
         join(save_dir, best_checkpoint_handler.last_checkpoint), map_location=device
@@ -467,6 +477,16 @@ def run(
     # Store the config, ...
     results.update(
         {section_name: dict(config[section_name]) for section_name in config.sections()}
+    )
+    # ... when training started
+    results['train_start'] = str(train_start) if train_start is not None else 'UNKNOWN'
+    # ... when training ended
+    results['train_end'] = str(train_end) if train_end is not None else 'UNKNOWN'
+    # ... how long training lasted
+    results['train_duration'] = (
+        str(train_end - train_start)
+        if train_end is not None and train_start is not None
+        else 'UNKNOWN'
     )
     # ... how many epochs we have trained,
     results['train_epochs'] = train_epochs

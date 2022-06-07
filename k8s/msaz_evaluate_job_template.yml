@@ -6,7 +6,7 @@ properties:
   - name: worker
     properties:
       environmentVariables: []
-      image: steimi/sd-next:1.4.10
+      image: steimi/sd-next:1.4.17
       resources:
         requests:
           cpu: 4.0

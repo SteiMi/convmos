@@ -6,12 +6,13 @@ properties:
   - name: worker
     properties:
       environmentVariables: []
-      image: steimi/sd-next:1.4.10
+      image: steimi/sd-next:1.4.17
       resources:
         requests:
           # cpu: 1.0
           cpu: 0.5
           memoryInGB: 25.0
+          # memoryInGB: 15.0
           gpu:
             count: 1
             sku: K80
@@ -29,6 +30,11 @@ properties:
   volumes:
   - name: results
     azureFile:
+      # sharename: results-extremeearlystopping2
+      # sharename: results-dlsearch-extremeearlystopping2
+      # sharename: results-noearlystopping
+      # sharename: results-moreablation
+      # sharename: results-ablationmore64
       sharename: results
       storageAccountName: INSERT_YOUR_NAME
       storageAccountKey: INSERT_YOUR_KEY

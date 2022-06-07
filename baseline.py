@@ -3,6 +3,7 @@ This implements a typical MOS baseline.
 """
 
 from argparse import ArgumentParser
+from datetime import datetime
 from os import makedirs
 from os.path import join
 import sys
@@ -276,6 +277,9 @@ def run(
         models.append(model_dict[model_name]())
         pcas.append(PCA(n_components=n_components))  # Sa'adi2017 does it like this
 
+    train_start = datetime.now()
+    print('Training started at', train_start)
+
     y_val_pred = np.empty(y_val.shape)
     y_test_pred = np.empty(y_test.shape)
     best_ks = np.empty((X_train.shape[-2], X_train.shape[-1]))
@@ -391,10 +395,24 @@ def run(
     print('Test metrics:')
     print(test_res)
 
+    train_end = datetime.now()
+    print('Training ended at', train_end)
+    print('Training duration:', train_end - train_start)
+
     results = {}
     # Store the config, ...
     results.update(
         {section_name: dict(config[section_name]) for section_name in config.sections()}
+    )
+    # ... when training started
+    results['train_start'] = str(train_start) if train_start is not None else 'UNKNOWN'
+    # ... when training ended
+    results['train_end'] = str(train_end) if train_end is not None else 'UNKNOWN'
+    # ... how long training lasted
+    results['train_duration'] = (
+        str(train_end - train_start)
+        if train_end is not None and train_start is not None
+        else 'UNKNOWN'
     )
     # ... the validation metrics that I calculate,
     results.update({f'val_{k}': v for k, v in val_res.items()})

@@ -6,16 +6,16 @@ from evaluate_rare import (
 from os.path import dirname, join, expanduser, isfile
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 from argparse import ArgumentParser
 import json
-import warnings
 from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm
 import matplotlib.ticker as mticker
 from mpl_toolkits.axes_grid1 import ImageGrid
 from multiprocessing import Pool
 import numpy as np
+import pandas as pd
 from scipy.stats import wilcoxon
 import xarray as xr
 
@@ -23,6 +23,8 @@ from metrics import combined_nrsme_rmse_mse_pbias_bias_rsq, correlation, skill
 from utils import init_mpl, fisher_z_mean, set_size, flatten_dict
 
 model_metrics_t = Dict[str, List[Dict[str, List[List[float]]]]]
+temporal_model_metrics_t = Dict[str, List[Dict[str, List[float]]]]
+generic_model_metrics_t = Union[model_metrics_t, temporal_model_metrics_t]
 
 
 def plot_map(
@@ -106,6 +108,25 @@ def calculate_metrics_flat(preds, obs) -> Dict[str, float]:
     mm_['Perc under 50'] = perc_under_50
 
     return mm_
+
+
+def calculate_metrics_for_timestep(
+    preds, obs
+) -> Tuple[float, float, float, float, float, float, float, float]:
+
+    # Correlation probably doesn't make too much sense per timestamp but whatever
+    corr_ = correlation(preds, obs)
+    (
+        nrmse_,
+        rmse_,
+        mse_,
+        pbias_,
+        bias_,
+        rsq_,
+    ) = combined_nrsme_rmse_mse_pbias_bias_rsq(preds, obs)
+    skill_ = skill(preds, obs)
+
+    return corr_, nrmse_, rmse_, mse_, pbias_, bias_, rsq_, skill_
 
 
 def calculate_metrics_for_cell(
@@ -196,6 +217,65 @@ def calculate_metrics(
         'NRMSE': nrmses.tolist(),
         'Skill score': skills.tolist(),
         '$R^2$': rsqs.tolist(),
+    }
+
+    return res
+
+
+def calculate_metrics_temporally(
+    preds, obs, processes: Optional[int] = None
+) -> Dict[str, np.ndarray]:
+
+    mask = np.load('remo_eobs_land_mask.npy')
+    # I have to invert the mask here, since I want to use numpy masked arrays and they assume True == invalid, whereas
+    # I assume True == valid
+    npma_mask = np.invert(mask)
+    npma_mask_with_times = np.repeat(
+        npma_mask[np.newaxis, :, :], preds.shape[0], axis=0
+    )
+
+    # Create masked arrays
+    preds_masked = np.ma.array(preds.values, mask=npma_mask_with_times)
+    obs_masked = np.ma.array(obs.values, mask=npma_mask_with_times)
+
+    # flatten spatial dimensions
+    # The compress and reshape seems to keep the right order of things according to some print-debugging
+    preds_valid = preds_masked.compressed().reshape((preds.shape[0], -1))
+    obs_valid = obs_masked.compressed().reshape((obs.shape[0], -1))
+
+    args_to_calc = []
+    for t in range(preds.shape[0]):
+        args_to_calc.append((preds_valid[t], obs_valid[t]))
+
+    # Calculate the metrics for each timestep in parallel
+    with Pool(processes=processes) as pool:
+        results = pool.starmap(calculate_metrics_for_timestep, args_to_calc)
+
+    correlations, nrmses, rmses, mses, pbiases, biases, rsqs, skills = (
+        [] for _ in range(8)
+    )
+
+    # Map each result to the correct timestep
+    for t in range(preds.shape[0]):
+        # Not sure why I have to cast explicitly here for json.dump to work
+        correlations.append(float(results[t][0]))
+        nrmses.append(float(results[t][1]))
+        rmses.append(float(results[t][2]))
+        mses.append(float(results[t][3]))
+        pbiases.append(float(results[t][4]))
+        biases.append(float(np.nanmean(results[t][5])))
+        rsqs.append(float(results[t][6]))
+        skills.append(float(results[t][7]))
+
+    res = {
+        'Correlation': correlations,
+        'Bias': biases,
+        'PBias': pbiases,
+        'MSE': mses,
+        'RMSE': rmses,
+        'NRMSE': nrmses,
+        'Skill score': skills,
+        '$R^2$': rsqs,
     }
 
     return res
@@ -516,7 +596,9 @@ def plot_histogram(model_preds: Dict[str, xr.Dataset], output_prefix: str = ''):
         color=tab20_data[: len(labels)],
     )
     ax2.hist(
-        data[:3],  # Using only 3 models makes the bar wider and there is no other data there anyways
+        data[
+            :3
+        ],  # Using only 3 models makes the bar wider and there is no other data there anyways
         label=labels[:3],
         histtype='bar',
         bins=[0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600],
@@ -543,11 +625,11 @@ def plot_histogram(model_preds: Dict[str, xr.Dataset], output_prefix: str = ''):
     # ax2.yaxis.set_ticklabels([])
     # ax2.yaxis.set_visible(False)
 
-    d = .015 # how big to make the diagonal lines in axes coordinates
+    d = 0.015  # how big to make the diagonal lines in axes coordinates
     # arguments to pass plot, just so we don't keep repeating them
     kwargs = dict(transform=ax.transAxes, color='k', clip_on=False)
-    ax.plot((1-d,1+d), (-d,+d), **kwargs)
-    ax.plot((1-d,1+d),(1-d,1+d), **kwargs)
+    ax.plot((1 - d, 1 + d), (-d, +d), **kwargs)
+    ax.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)
 
     # kwargs.update(transform=ax2.transAxes)  # switch to the bottom axes
     # ax2.plot((-d,+d), (1-d,1+d), **kwargs)
@@ -560,6 +642,70 @@ def plot_histogram(model_preds: Dict[str, xr.Dataset], output_prefix: str = ''):
 
     plt.savefig(
         join('eval_out', output_prefix + 'histogram.pdf'), bbox_inches='tight', dpi=200
+    )
+    plt.close(fig=fig)
+
+
+def plot_temporally(
+    stacked_temporal_model_metrics: Dict[str, Dict[str, List[List[float]]]],
+    temporal_baseline_metrics: Dict[str, List[float]],
+    metric: str = 'RMSE',
+    output_prefix: str = '',
+    smooth_windows: int = 14,
+    start_date: str = '2011-01-01',
+    end_date: str = '2015-12-31',
+    ignore_models: List[str] = [
+        'ResNet18',
+        'ResNet34',
+        'ResNet50',
+        'ResNet101',
+        'Lin',
+        'NL RF',
+        'CM U-Net',
+        'U-Net',
+    ],
+):
+
+    fig, ax = plt.subplots(
+        1,
+        1,
+        figsize=set_size(fraction=1),
+    )
+    ax.margins(x=0)
+
+    x = pd.date_range(start=start_date, end=end_date, freq='D')
+
+    def movingaverage(interval, window_size):
+        window = np.ones(int(window_size)) / float(window_size)
+        return np.convolve(interval, window, 'same')
+
+    baseline_y = temporal_baseline_metrics[metric]
+    if smooth_windows > 0:
+        baseline_y = movingaverage(baseline_y, smooth_windows)
+
+    ax.plot(x, baseline_y, label='REMO raw')
+
+    for model, metrics in stacked_temporal_model_metrics.items():
+        if model in ignore_models:
+            continue
+        np_metrics = np.array(metrics[metric])
+        y = np_metrics.mean(axis=0)
+        if smooth_windows > 0:
+            y = movingaverage(y, smooth_windows)
+        ax.plot(x, y, label=model)
+
+    fig.tight_layout()
+    if metric == 'RMSE':
+        ax.set_ylabel('RMSE [mm]')
+    else:
+        ax.set_ylabel(metric)
+    plt.xticks(rotation=45, ha='right', rotation_mode='anchor')
+
+    plt.legend()
+    plt.savefig(
+        join('eval_out', output_prefix + 'temporal_' + metric + '.pdf'),
+        bbox_inches='tight',
+        dpi=200,
     )
     plt.close(fig=fig)
 
@@ -797,6 +943,22 @@ def model_metrics_to_mean_model_metrics(
     return mean_model_metrics
 
 
+def stack_temporal_model_metrics(
+    temporal_model_metrics: temporal_model_metrics_t,
+) -> Dict[Any, Dict[str, List[List[float]]]]:
+    stacked_model_metrics: Dict[str, Dict[str, List[List[float]]]] = {}
+
+    for m, v in temporal_model_metrics.items():
+        # Merge list of dicts to dict of lists (https://stackoverflow.com/a/52693367/9083711)
+        mm_list = defaultdict(list)
+        for d in v:
+            for k, mmv in d.items():
+                mm_list[k].append(mmv)
+        stacked_model_metrics[m] = mm_list
+
+    return stacked_model_metrics
+
+
 def get_model_metrics(
     paper_preds: Dict[str, List[xr.Dataset]],
     processes: Optional[int] = None,
@@ -822,6 +984,31 @@ def get_model_metrics(
     return model_metrics
 
 
+def get_temporal_model_metrics(
+    paper_preds: Dict[str, List[xr.Dataset]],
+    processes: Optional[int] = None,
+    output_prefix: str = '',
+) -> temporal_model_metrics_t:
+    """Calculate the model metrics over time and cache them. If the model_metrics were already calculated at some point
+    then simply load the cached file."""
+    cached_mm_file = join('eval_out', output_prefix + 'temporal_model_metrics.json')
+
+    if isfile(cached_mm_file):
+        print(f'Loading cached model metrics from {cached_mm_file}')
+        temporal_model_metrics = json.load(open(cached_mm_file, 'r'))
+    else:
+        temporal_model_metrics = {
+            k: [
+                calculate_metrics_temporally(v.pred, v.target, processes=processes)
+                for v in v_l
+            ]
+            for k, v_l in paper_preds.items()
+        }
+        json.dump(temporal_model_metrics, open(cached_mm_file, 'w'))
+
+    return temporal_model_metrics
+
+
 def condense_model_metrics(
     mean_model_metrics: Dict[Any, Dict[str, List[float]]],
     metric: str,
@@ -836,8 +1023,9 @@ def condense_model_metrics(
         if (
             model == 'Lin'
             or model == 'NL PCR'
-            or model[1] == 'Lin'
-            or model[1] == 'NL PCR'
+            or (
+                isinstance(model, tuple) and (model[1] == 'Lin' or model[1] == 'NL PCR')
+            )
         ):
             # Lin and NL PCR are deterministic and will always yield the same results.
             # Instead of calculating 20 times the same metrics, I will just calculate them once and append them
@@ -1092,40 +1280,52 @@ def multi_evaluation(
         print('Plot distributions...')
         plot_histogram({k: v_l[0] for k, v_l in paper_preds.items()})
 
-    # print('Hist only for testing')
-    # return
-
     print('Calculating metrics...')
-    model_metrics = get_model_metrics(
+    temporal_model_metrics = get_temporal_model_metrics(
         paper_preds, processes=processes, output_prefix=output_prefix
+    )
+    stacked_temporal_model_metrics = stack_temporal_model_metrics(
+        temporal_model_metrics
     )
 
     # Just use the first best dataset for the baseline data, as it is in every .nc file anyway
     some_dataset = next(iter(paper_preds.values()))[0]
+    temporal_baseline_metrics = calculate_metrics_temporally(
+        some_dataset.input, some_dataset.target
+    )
     baseline_metrics = calculate_metrics(some_dataset.input, some_dataset.target)
+
+    model_metrics = get_model_metrics(
+        paper_preds, processes=processes, output_prefix=output_prefix
+    )
 
     mean_model_metrics = model_metrics_to_mean_model_metrics(model_metrics)
 
-    for metric in ['Correlation', 'Bias', 'RMSE', 'Skill score', '$R^2$']:
+    num_runs = max([len(preds) for preds in paper_preds.values()])
+
+    # Infer start and end date for temporal plot
+    start_date = some_dataset.time.min()
+    end_date = some_dataset.time.max()
+    start_date_str = str(start_date.dt.strftime('%Y-%m-%d').values)
+    end_date_str = str(end_date.dt.strftime('%Y-%m-%d').values)
+
+    for metric in ['Correlation', 'Bias', 'RMSE', 'Skill score', '$R^2$', 'NRMSE']:
+
+        # Create the temporal plots
+        plot_temporally(
+            stacked_temporal_model_metrics,
+            temporal_baseline_metrics,
+            metric=metric,
+            start_date=start_date_str,
+            end_date=end_date_str,
+            output_prefix=output_prefix,
+        )
 
         condensed_model_metrics = condense_model_metrics(
-            mean_model_metrics, metric=metric, num_runs=len(paper_preds['ConvMOS'])
+            mean_model_metrics,
+            metric=metric,
+            num_runs=num_runs,  # len(paper_preds['ConvMOS'])
         )
-        # condensed_model_metrics = {}
-        # print('metric:', metric)
-        # for model, metrics in mean_model_metrics.items():
-        #     mm = metrics[metric]
-        #     if model == 'Lin' or model == 'NL PCR':
-        #         # Lin and NL PCR are deterministic and will always yield the same results.
-        #         # Instead of calculating 20 times the same metrics, I will just calculate them once and append them
-        #         # 20 times
-        #         condensed_model_metrics[model] = mm * len(paper_preds['ConvMOS'])
-        #     else:
-        #         condensed_model_metrics[model] = mm
-        #     if metric == 'Correlation':
-        #         print(model, '\t', fisher_z_mean(np.array(mm)), f'({np.nanstd(mm)})')
-        #     else:
-        #         print(model, '\t', np.nanmean(mm), f'({np.nanstd(mm)})')
 
         # Significance test
         if 'ConvMOS' in model_metrics:
@@ -1239,6 +1439,13 @@ if __name__ == "__main__":
             output_prefix = 'ablation_'
             histogram = False
 
+            multi_evaluation(
+                pred_paths,
+                processes=args.processes,
+                output_prefix=output_prefix,
+                histogram=histogram,
+            )
+
         elif args.rare:
             print('Evaluating performance for rare data points with DenseLoss..')
             pred_paths_per_alpha: Dict[
@@ -1313,6 +1520,8 @@ if __name__ == "__main__":
             # TODO: REMOVE AFTER TESTING
             # pred_paths = {k: v[:1] for k, v in pred_paths.items()}
             # pred_paths = {'ConvMOS': pred_paths['ConvMOS'][:1]}
+            # pred_paths = {'ConvMOS': pred_paths['ConvMOS']}
+            # histogram = False
 
             multi_evaluation(
                 pred_paths,

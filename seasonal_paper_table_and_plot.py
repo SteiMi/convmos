@@ -89,6 +89,7 @@ def seasonal_plot_grid(
 def seasonal_evaluation(
     path_prefix: str = join('~', 'convmos_rmse_maps'),
     processes: Optional[int] = None,
+    yearly: bool = False,
 ):
     paper_pred_paths = {
         'ConvMOS': [
@@ -280,12 +281,19 @@ def seasonal_evaluation(
     metric = 'RMSE'
     season_model_metrics = {}
     season_baseline_metrics = {}
-    for season in ['DJF', 'JJA', 'MAM', 'SON']:
+    seasons = ['DJF', 'JJA', 'MAM', 'SON'] if not yearly else list(range(2011, 2016))
+    for season in seasons:
 
-        season_preds = {
-            k: [v.sel(time=v['time.season'] == season) for v in v_l]
-            for k, v_l in paper_preds.items()
-        }
+        if yearly:
+            season_preds = {
+                k: [v.sel(time=v['time.year'] == season) for v in v_l]
+                for k, v_l in paper_preds.items()
+            }
+        else:
+            season_preds = {
+                k: [v.sel(time=v['time.season'] == season) for v in v_l]
+                for k, v_l in paper_preds.items()
+            }
 
         print('Calculating metrics...')
         cached_mm_file = join('eval_out', f'model_metrics_{season}.pkl')
@@ -295,7 +303,10 @@ def seasonal_evaluation(
             model_metrics = pickle.load(open(cached_mm_file, 'rb'))
         else:
             model_metrics = {
-                k: [calculate_metrics(v.pred, v.target, processes=processes) for v in v_l]
+                k: [
+                    calculate_metrics(v.pred, v.target, processes=processes)
+                    for v in v_l
+                ]
                 for k, v_l in season_preds.items()
             }
             pickle.dump(model_metrics, open(cached_mm_file, 'wb'))
@@ -308,12 +319,13 @@ def seasonal_evaluation(
         season_baseline_metrics[season] = baseline_metrics
 
         condensed_model_metrics = {}
+        baseline_mean = np.nanmean(baseline_metrics[metric])
         print(season)
         print(metric)
         print(
             'None',
             '\t',
-            np.nanmean(baseline_metrics[metric]),
+            baseline_mean,
             # f'({np.nanstd(baseline_metrics[metric])})', # This does not make sense as there is only one climate run
         )
         for model, metrics in model_metrics.items():
@@ -325,10 +337,27 @@ def seasonal_evaluation(
                 condensed_model_metrics[model] = mm * len(paper_preds['ConvMOS'])
             else:
                 condensed_model_metrics[model] = mm
+            perc_to_baseline = np.array(mm) / baseline_mean
             if metric == 'Correlation':
-                print(model, '\t', fisher_z_mean(np.array(mm)), f'({np.nanstd(mm)})')
+                print(
+                    model,
+                    '\t',
+                    fisher_z_mean(np.array(mm)),
+                    f'({np.nanstd(mm)})',
+                    '\t',
+                    f'{fisher_z_mean(perc_to_baseline)}/{np.nanmean(perc_to_baseline)}%',
+                    f'{np.nanstd(perc_to_baseline)}%',
+                )
             else:
-                print(model, '\t', np.nanmean(mm), f'({np.nanstd(mm)})')
+                print(
+                    model,
+                    '\t',
+                    np.nanmean(mm),
+                    f'({np.nanstd(mm)})',
+                    '\t',
+                    f'{np.nanmean(perc_to_baseline)}%',
+                    f'{np.nanstd(perc_to_baseline)}%',
+                )
 
         print('\n\n')
         # season_model_metrics[season] = {'bla': [], 'blupp': []}
@@ -338,7 +367,8 @@ def seasonal_evaluation(
             for model in model_metrics.keys():
                 if model != 'ConvMOS':
                     _, wilc_p = wilcoxon(
-                        condensed_model_metrics['ConvMOS'], condensed_model_metrics[model]
+                        condensed_model_metrics['ConvMOS'],
+                        condensed_model_metrics[model],
                     )
                     if wilc_p > 0.05:
                         wilc_significant = False
@@ -357,7 +387,8 @@ def seasonal_evaluation(
             for model in model_metrics.keys():
                 if model != 'CM U-Net':
                     _, wilc_p = wilcoxon(
-                        condensed_model_metrics['CM U-Net'], condensed_model_metrics[model]
+                        condensed_model_metrics['CM U-Net'],
+                        condensed_model_metrics[model],
                     )
                     if wilc_p > 0.05:
                         wilc_significant = False
@@ -372,18 +403,19 @@ def seasonal_evaluation(
                         wilc_significant,
                     )
 
-    vmin = 0.0
-    vmax = 10.0
+    if not yearly:
+        vmin = 0.0
+        vmax = 10.0
 
-    models_to_plot = ['ConvMOS', 'NL PCR']
-    seasonal_plot_grid(
-        season_model_metrics,
-        season_baseline_metrics,
-        metric,
-        vmin,
-        vmax,
-        models_to_plot,
-    )
+        models_to_plot = ['ConvMOS', 'NL PCR']
+        seasonal_plot_grid(
+            season_model_metrics,
+            season_baseline_metrics,
+            metric,
+            vmin,
+            vmax,
+            models_to_plot,
+        )
 
 
 if __name__ == "__main__":
@@ -398,9 +430,7 @@ if __name__ == "__main__":
     parser.add_argument(
         '-l', '--log-norm', action='store_true', help='Log-normalize the images'
     )
-    parser.add_argument(
-        '-s', '--seasonal', action='store_true', help='Evaluate per Season'
-    )
+    parser.add_argument('-y', '--yearly', action='store_true', help='Evaluate per Year')
     parser.add_argument(
         '-p',
         '--processes',
@@ -418,4 +448,6 @@ if __name__ == "__main__":
 
     init_mpl()
 
-    seasonal_evaluation(processes=args.processes, path_prefix=args.path_prefix)
+    seasonal_evaluation(
+        processes=args.processes, path_prefix=args.path_prefix, yearly=args.yearly
+    )

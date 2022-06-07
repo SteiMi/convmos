@@ -6,10 +6,30 @@ metadata:
 spec:
   template:
     spec:
+      tolerations:
+        - key: "network"
+          operator: "Equal"
+          value: "slow"
+          effect: "NoSchedule"
+        # - key: "A100"
+        #   operator: "Equal"
+        #   value: "true"
+        #   effect: "NoSchedule"
+      # affinity for same GPU across time tests
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #         - matchExpressions:
+      #           - key: nvidia.com/gpu.product
+      #             operator: In
+      #             values:
+      #             - NVIDIA-GeForce-RTX-2080-Ti
       priorityClassName: research-low
+      # priorityClassName: research-med # avoid eviction for time tests
       containers:
         - name: worker
-          image: lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.4.10
+          image: lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.4.17
           imagePullPolicy: "Always"
           resources:
             limits:
@@ -44,7 +64,14 @@ spec:
             monitors:
               - 132.187.14.16,132.187.14.17,132.187.14.19,132.187.14.20
             user: steininger
-            path: "/home/ls6/steininger/results/convmos"
+            # path: "/home/ls6/steininger/results/sd-next"
+            path: "/home/ls6/steininger/results/sd-next/tmp"
+            # path: "/home/ls6/steininger/results/sd-next/time_tests"
+            # path: "/home/ls6/steininger/results/sd-next/resnet"
+            # path: "/home/ls6/steininger/results/sd-next/gggl"
+            # path: "/home/ls6/steininger/results/sd-next/ablation"
+            # path: "/home/ls6/steininger/results/sd-next/ablation_2"
+            # path: "/home/ls6/steininger/results/sd-next/maskedloss"
             secretRef:
               name: ceph-secret
         - name: scratch

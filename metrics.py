@@ -73,12 +73,13 @@ def skill(preds, obs):
     if len(y_pred_cell) == 0 | len(y_cell) == 0:
         return np.nan
 
-    # span bins from min to max like described here: https://rmets.onlinelibrary.wiley.com/doi/pdfdirect/10.1002/joc.4612
+    # span bins from min to max like described here:
+    # https://rmets.onlinelibrary.wiley.com/doi/pdfdirect/10.1002/joc.4612
     min_y = np.floor(np.minimum(np.min(y_cell), np.min(y_pred_cell)))
     max_y = np.ceil(np.maximum(np.max(y_cell), np.max(y_pred_cell)))
 
     # Make bins of 1 mm/day width as Perkins did
-    bins = np.arange(min_y, max_y+1, step=1, dtype=int)
+    bins = np.arange(min_y, max_y + 1, step=1, dtype=int)
 
     # Calculate the histogram over the time for the current cell
     y_counts_cell, bin_edges = np.histogram(y_cell, bins=bins)
@@ -87,8 +88,10 @@ def skill(preds, obs):
 
     # Calculate the skill at the cell according to https://journals.ametsoc.org/doi/full/10.1175/JCLI4253.1
     skill_at_cell = 0.0
-    for b in range(len(bins)-1):
-        skill_at_cell += np.minimum(y_pred_hist_dist_cell.pdf(bin_edges[b]), y_hist_dist_cell.pdf(bin_edges[b]))
+    for b in range(len(bins) - 1):
+        skill_at_cell += np.minimum(
+            y_pred_hist_dist_cell.pdf(bin_edges[b]), y_hist_dist_cell.pdf(bin_edges[b])
+        )
 
     if skill_at_cell > 1.0:
         print('Skill cannot be >1. Something is wrong.')

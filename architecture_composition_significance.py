@@ -24,13 +24,15 @@ def test(
 if __name__ == '__main__':
 
     results = pd.read_json(
-        expanduser(join('~', 'results', 'sd-next', 'ablation_2', 'results.json'))
+        # expanduser(join('~', 'results', 'sd-next', 'ablation_2', 'results.json'))  # "regular" ablation
+        expanduser(join('~', 'results', 'sd-next', 'ablationmore64', 'results-ablationmore64.json'))  # CM-UNet ablation
     )
 
-    # Filter gggl test-runs
+    # Filter gggl test-runs, which I accidentally wrote into ablation_2/results.json
     results = results[results['DataOptions.max_year'] == 2010]
 
     # Check whether we have results for 20 runs
+    print(results.groupby('NN.architecture').size())
     assert all(results.groupby('NN.architecture').size() == 20)
 
     pd.options.display.float_format = '{:,.3f}'.format
@@ -40,6 +42,7 @@ if __name__ == '__main__':
             [
                 'NN.architecture',
                 'test_RMSE',
+                'test_NRMSE',
                 'test_Correlation',
                 'test_Skill score',
                 'test_$R^2$',
@@ -78,6 +81,30 @@ if __name__ == '__main__':
         .name
     )
 
+    best_nrmse_architecture = (
+        results.groupby('NN.architecture')
+        .mean()
+        .sort_values('test_NRMSE', ascending=False)
+        .iloc[0]
+        .name
+    )
+
+    best_rsq_architecture = (
+        results.groupby('NN.architecture')
+        .mean()
+        .sort_values('test_$R^2$', ascending=False)
+        .iloc[0]
+        .name
+    )
+
+    best_cor_architecture = (
+        results.groupby('NN.architecture')
+        .mean()
+        .sort_values('test_Correlation', ascending=False)
+        .iloc[0]
+        .name
+    )
+
     print(
         'Is '
         + best_architecture
@@ -98,8 +125,47 @@ if __name__ == '__main__':
         '\n',
     )
 
+    print(
+        'Is '
+        + best_architecture
+        + '\'s NRMSE significantly different to best ('
+        + best_nrmse_architecture
+        + ')?',
+        test(results, best_architecture, best_nrmse_architecture, 'test_NRMSE'),
+        '\n',
+    )
+
+    print(
+        'Is '
+        + best_architecture
+        + '\'s R2 significantly different to best ('
+        + best_rsq_architecture
+        + ')?',
+        test(results, best_architecture, best_rsq_architecture, 'test_$R^2$'),
+        '\n',
+    )
+
+    print(
+        'Is '
+        + best_architecture
+        + '\'s Correlation significantly different to best ('
+        + best_cor_architecture
+        + ')?',
+        test(results, best_architecture, best_cor_architecture, 'test_Correlation'),
+        '\n',
+    )
+
+    print(
+        'Is '
+        + best_architecture
+        + '\'s RMSE significantly different to glll?',
+        test(results, best_architecture, 'glll', 'test_RMSE'),
+        '\n',
+    )
+
     metrics = [
         'test_RMSE',
+        'test_NRMSE',
         'test_Correlation',
         'test_Skill score',
         'test_$R^2$',

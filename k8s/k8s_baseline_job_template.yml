@@ -15,17 +15,28 @@ spec:
           operator: "Equal"
           value: "true"
           effect: "NoSchedule"
-      priorityClassName: research-med
+      priorityClassName: research-low
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #         - matchExpressions:
+      #           - key: kubernetes.io/hostname
+      #             operator: In
+      #             values:
+      #             # - ancalagon
+      #             - maglor
+      #             - maedhros
       containers:
         - name: worker
-          image: lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.1.1
+          image: lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.4.17
           imagePullPolicy: "Always"
           resources:
             limits:
-              cpu: "15"
+              cpu: "17"
               memory: "80Gi"
             requests:
-              cpu: "15"
+              cpu: "17"
               memory: "35Gi"
           volumeMounts:
             - mountPath: "/workspace/results"
@@ -51,6 +62,8 @@ spec:
               - 132.187.14.16,132.187.14.17,132.187.14.19,132.187.14.20
             user: steininger
             path: "/home/ls6/steininger/results/sd-next"
+            # path: "/home/ls6/steininger/results/sd-next/time_tests"
+            # path: "/home/ls6/steininger/results/sd-next/time_tests_ancalagon"
             # path: "/home/ls6/steininger/results/sd-next/supervisedpca"
             # path: "/home/ls6/steininger/results/sd-next/nlpcr"
             # path: "/home/ls6/steininger/results/sd-next/lin"

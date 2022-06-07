@@ -52,14 +52,14 @@ We use the following models:
 
 * Lin (Local Linear Regression):
     * Adjust `config_template_remo_prec_baseline.ini` so that `aux_variables` is empty (if necessary)
-    * Run `start_k8s_job.sh my_lin_run linear`
+    * Run `start_k8s_job.sh my_lin_run -m linear`
 * NL PCR (Non-local Principal Component Regression):
     * Adjust `config_template_remo_prec_baseline.ini` so that `aux_variables` contains all variables (if necessary)
-    * Run `start_k8s_job.sh my_nlpcr_run linear-nonlocal`
+    * Run `start_k8s_job.sh my_nlpcr_run -m linear-nonlocal`
 * NL RF (Non-local Random Forest):
     * Adjust `config_template_remo_prec_baseline.ini` so that `aux_variables` contains all variables (if necessary)
-    * Run `start_k8s_job.sh my_nlrf_run rf-nonlocal`
+    * Run `start_k8s_job.sh my_nlrf_run -m rf-nonlocal`
 * ConvMOS:
     * Adjust `config_template_remo_prec.ini` so that `aux_variables` contains all variables (if necessary)
-    * Run `start_k8s_job.sh my_convmos_run convmos gggl`
+    * Run `start_k8s_job.sh my_convmos_run -m convmos -a gggl -s`
         * `gggl` specifies the module composition

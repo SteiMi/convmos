@@ -1,23 +1,34 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: convmos-evaluate-denseloss-ees2-tb
+  name: convmos-evaluate-ablation-cmunet-r1
   namespace: steininger
 spec:
   template:
     spec:
+      tolerations:
+        - key: "network"
+          operator: "Equal"
+          value: "slow"
+          effect: "NoSchedule"
+        # - key: "A100"
+        #   operator: "Equal"
+        #   value: "true"
+        #   effect: "NoSchedule"
       priorityClassName: research-low
       containers:
         - name: worker
-          image: lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.4.10
+          image: lsx-harbor.informatik.uni-wuerzburg.de/steininger-statistical-downscaling/sd-next:1.4.17
           imagePullPolicy: "Always"
           resources:
             limits:
               cpu: "20"
-              memory: "40Gi"
+              memory: "100Gi"
+              # memory: "65Gi"
             requests:
               cpu: "20"
-              memory: "40Gi"
+              memory: "100Gi"
+              # memory: "65Gi"
           volumeMounts:
             - mountPath: "/workspace/eval_out"
               name: results
@@ -25,9 +36,12 @@ spec:
               name: scratch
           command: ["sh", "-c"]
           args: ["python -u evaluate.py -p 20 --path-prefix /scratch/steininger/deepsd/convmos_paper_runs | tee eval_out/evaluate.log"] # Create default paper evaluation
+          # args: ["python -u evaluate.py -r -p 20 --path-prefix /scratch/steininger/deepsd/convmos_paper_runs | tee eval_out/evaluate.log"] # Create rare paper evaluation
           # args: ["python -u evaluate.py -r -t -p 20 --path-prefix /scratch/steininger/deepsd/convmos_paper_runs | tee eval_out/evaluate_twobin.log"] # Create rare paper evaluation for only two bins
           # args: ["python -u seasonal_paper_table_and_plot.py -p 20 --path-prefix /scratch/steininger/deepsd/convmos_paper_runs | tee eval_out/evaluate_seasonal.log"] # Create default seasonal paper evaluation
+          # args: ["python -u seasonal_paper_table_and_plot.py -y -p 20 --path-prefix /scratch/steininger/deepsd/convmos_paper_runs/0.0 | tee eval_out/evaluate_yearly.log"] # Create default yearly paper evaluation
           # args: ["python -u evaluate.py -a -p 20 --path-prefix /scratch/steininger/deepsd/scratch_remo/ablation | tee eval_out/ablation_evaluate.log"] # Create ablation paper evaluation
+          # args: ["python -u evaluate.py -a -p 20 --path-prefix /scratch/steininger/deepsd/scratch_remo/ablationmore64 | tee eval_out/ablation_evaluate.log"] # Create CM-UNet ablation paper evaluation
       securityContext:
         runAsUser: 1148
         fsGroup: 1003
@@ -39,7 +53,10 @@ spec:
             monitors:
               - 132.187.14.16,132.187.14.17,132.187.14.19,132.187.14.20
             user: steininger
-            path: "/home/ls6/steininger/results/convmos"
+            # path: "/home/ls6/steininger/results/convmos_nice_results/revision1_cmunet-ablation_2022_05_16"
+            # path: "/home/ls6/steininger/results/convmos_nice_results/revision1_2022-05-10"
+            # path: "/home/ls6/steininger/results/convmos_nice_results/denseloss_ees2"
+            path: "/home/ls6/steininger/results/convmos_nice_results"
             secretRef:
               name: ceph-secret
         - name: scratch

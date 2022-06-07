@@ -2,9 +2,9 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-NUM_RUNS=20
+# NUM_RUNS=20
 # NUM_RUNS=10
-# NUM_RUNS=5
+NUM_RUNS=5
 
 for i in `seq 1 $NUM_RUNS`;
 do
@@ -18,6 +18,10 @@ do
     # $DIR/start_k8s_job.sh dlsearch-ees2-$i -z azure -x 0.7 -w -t -s && sleep 3
     # $DIR/start_k8s_job.sh dlsearch-nes-$i -z azure -x 0.0 -e 400 -w -t && sleep 3
     # $DIR/start_k8s_job.sh nes-$i -z azure -x 1.0 -e 400 -w && sleep 3
-    $DIR/start_k8s_job.sh nes-$i -z azure -e 400 && sleep 3
+    # $DIR/start_k8s_job.sh nes-$i -z azure -e 400 && sleep 3
+    # $DIR/start_k8s_job.sh timetest-$i -m ResNet101 -s
+    # $DIR/start_k8s_job.sh timetest-$i -m rf-nonlocal
+    # $DIR/start_k8s_job.sh timetest-$i -m linear-nonlocal
+    $DIR/start_k8s_job.sh timetest-$i -m linear
     # az container delete --resource-group EU-N -y --name sdnext-convmos-prec-wl-1-0-ees2-$i
 done
